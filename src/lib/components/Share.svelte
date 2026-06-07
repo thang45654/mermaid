@@ -26,17 +26,19 @@
     shortenError = '';
     shortenedUrl = '';
     try {
-      const res = await fetch(
-        `https://is.gd/create.php?format=json&url=${encodeURIComponent(window.location.href)}`
-      );
+      const res = await fetch('https://cleanuri.com/api/v1/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `url=${encodeURIComponent(window.location.href)}`
+      });
       const data = await res.json();
-      if (data.shorturl) {
-        shortenedUrl = data.shorturl;
+      if (data.result_url) {
+        shortenedUrl = data.result_url;
       } else {
-        shortenError = data.errormessage ?? 'Không thể rút gọn URL.';
+        shortenError = data.error ?? 'Không thể rút gọn URL.';
       }
     } catch {
-      shortenError = 'Lỗi kết nối tới is.gd.';
+      shortenError = 'Lỗi kết nối tới cleanuri.com.';
     } finally {
       isShortening = false;
     }
