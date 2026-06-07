@@ -26,7 +26,11 @@
     shortenError = '';
     shortenedUrl = '';
     try {
-      const res = await fetch(`/shorten?url=${encodeURIComponent(window.location.href)}`);
+      const res = await fetch('/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: window.location.href })
+      });
       const data = await res.json();
       if (data.result_url) {
         shortenedUrl = data.result_url;

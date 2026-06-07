@@ -1,17 +1,13 @@
-export async function onRequestGet({ request }) {
-  const url = new URL(request.url);
-  const target = url.searchParams.get('url');
+export async function onRequestPost({ request, env }) {
+  const { url } = await request.json();
 
-  if (!target) {
-    return Response.json({ error: 'Missing url parameter' }, { status: 400 });
+  if (!url) {
+    return Response.json({ error: 'Missing url' }, { status: 400 });
   }
 
-  const res = await fetch(`https://v.gd/create.php?format=simple&url=${encodeURIComponent(target)}`);
-  const shortUrl = await res.text();
+  const id = Math.random().toString(36).slice(2, 8);
+  await env.URLS.put(id, url, { expirationTtl: 60 * 60 * 24 * 30 }); // 30 ngày
 
-  if (!shortUrl.startsWith('https://')) {
-    return Response.json({ error: shortUrl }, { status: 500 });
-  }
-
-  return Response.json({ result_url: shortUrl });
+  const origin = new URL(request.url).origin;
+  return Response.json({ result_url: `${origin}/s/${id}` });
 }
