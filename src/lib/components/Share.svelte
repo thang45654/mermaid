@@ -1,13 +1,46 @@
-<script>
-  import { buttonVariants } from '$/components/ui/button';
+<script lang="ts">
+  import { buttonVariants, Button } from '$/components/ui/button';
   import * as Dialog from '$/components/ui/dialog';
   import { Separator } from '$/components/ui/separator';
   import { env } from '$/util/env';
   import { urlsStore } from '$/util/state';
   import { asset } from '$app/paths';
+  import LinkIcon from '~icons/material-symbols/link';
   import ShareIcon from '~icons/material-symbols/share';
   import CopyInput from './CopyInput.svelte';
   import MermaidChartIcon from './MermaidChartIcon.svelte';
+
+  let shortenedUrl = $state('');
+  let isShortening = $state(false);
+  let shortenError = $state('');
+
+  const isLocalhost = () =>
+    ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+
+  const shortenUrl = async () => {
+    if (isLocalhost()) {
+      shortenError = 'URL shortener không hoạt động trên localhost. Hãy thử sau khi deploy.';
+      return;
+    }
+    isShortening = true;
+    shortenError = '';
+    shortenedUrl = '';
+    try {
+      const res = await fetch(
+        `https://is.gd/create.php?format=json&url=${encodeURIComponent(window.location.href)}`
+      );
+      const data = await res.json();
+      if (data.shorturl) {
+        shortenedUrl = data.shorturl;
+      } else {
+        shortenError = data.errormessage ?? 'Không thể rút gọn URL.';
+      }
+    } catch {
+      shortenError = 'Lỗi kết nối tới is.gd.';
+    } finally {
+      isShortening = false;
+    }
+  };
 </script>
 
 <Dialog.Root>
@@ -30,6 +63,23 @@
         <Dialog.Description>
           The content of the diagrams you create never leaves your browser.
         </Dialog.Description>
+      </div>
+
+      <Separator />
+      <div class="flex flex-col gap-2">
+        <h2 class="flex items-center gap-2">
+          <LinkIcon class="size-5" />
+          Shorten URL
+        </h2>
+        <Button variant="outline" onclick={shortenUrl} disabled={isShortening}>
+          {isShortening ? 'Đang rút gọn...' : 'Tạo short URL'}
+        </Button>
+        {#if shortenedUrl}
+          <CopyInput value={shortenedUrl} />
+        {/if}
+        {#if shortenError}
+          <p class="text-sm text-destructive">{shortenError}</p>
+        {/if}
       </div>
       {#if env.isEnabledMermaidChartLinks}
         <Separator />
