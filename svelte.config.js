@@ -12,7 +12,7 @@ const config = {
       '$/*': './src/lib/*'
     },
     paths: {
-      base: process.env.MERMAID_BASE_PATH ?? ''
+      base: (process.env.MERMAID_BASE_PATH ?? '').replace(/^['"]|['"]$/g, '')
     },
     adapter: adapter({
       pages: 'docs',

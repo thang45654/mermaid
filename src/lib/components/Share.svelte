@@ -26,11 +26,7 @@
     shortenError = '';
     shortenedUrl = '';
     try {
-      const res = await fetch('https://cleanuri.com/api/v1/shorten', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `url=${encodeURIComponent(window.location.href)}`
-      });
+      const res = await fetch(`/shorten?url=${encodeURIComponent(window.location.href)}`);
       const data = await res.json();
       if (data.result_url) {
         shortenedUrl = data.result_url;
@@ -38,7 +34,7 @@
         shortenError = data.error ?? 'Không thể rút gọn URL.';
       }
     } catch {
-      shortenError = 'Lỗi kết nối tới cleanuri.com.';
+      shortenError = 'Lỗi kết nối.';
     } finally {
       isShortening = false;
     }
